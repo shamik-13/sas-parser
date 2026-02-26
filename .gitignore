@@ -1,0 +1,30 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# ANTLR generated code
+generated/
+
+# Reports and failures (regenerated)
+reports/
+failures/
+
+# Tools (downloaded JARs)
+tools/*.jar
+
+# Test bench
+test_bench/
+
+# OS
+.DS_Store
+
+
+sources/
+strumenta-format/
