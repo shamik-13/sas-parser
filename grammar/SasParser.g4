@@ -346,6 +346,7 @@ dataStepStatement
     | ifThenElseStmt
     | doBlock
     | selectBlock
+    | cardsStatement
     | assignmentOrCallStmt
     | lengthStatement
     | formatStatement
@@ -371,7 +372,6 @@ dataStepStatement
     | gotoStatement
     | linkStatement
     | listStatement
-    | cardsStatement
     | putlogStatement
     | macroDefinition
     | macroStatement

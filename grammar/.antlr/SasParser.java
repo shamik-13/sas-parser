@@ -66,7 +66,8 @@ public class SasParser extends Parser {
 		STR_PERCENT_BQUOTE_OPEN=244, STR_PERCENT_NRBQUOTE_OPEN=245, STR_PERCENT_QUOTE_OPEN=246, 
 		STR_PERCENT_NRQUOTE_OPEN=247, STR_PERCENT_SUPERQ_OPEN=248, STR_PERCENT_UNQUOTE_OPEN=249, 
 		STR_MACRO_CALL=250, STR_SEMI=251, STR_LPAREN=252, STR_RPAREN=253, STR_STRING=254, 
-		STR_WS=255, STR_COMMA=256, STR_TEXT=257;
+		STR_WS=255, STR_COMMA=256, STR_TEXT=257, RAWDATA_LINE=258, RAWDATA_CHAR=259, 
+		RAWDATA4_CONTENT=260, RAWDATA4_SEMI=261, RAWDATA4_END=262;
 	public static final int
 		RULE_program = 0, RULE_programStatement = 1, RULE_emptyStatement = 2, 
 		RULE_unknownStatement = 3, RULE_trailingText = 4, RULE_lineComment = 5, 
@@ -191,7 +192,9 @@ public class SasParser extends Parser {
 			null, "'='", "'+'", "'-'", "'*'", "'/'", "'.'", "':'", "'#'", "'@'", 
 			"'!'", "'~'", "'^'", "'|'", "'?'", "'\\'", "'<'", "'>'", "'<='", "'>='", 
 			"'<>'", "'^='", "'~='", "'||'", "'!!'", "'**'", null, null, null, null, 
-			null, null, null, null, "'&'"
+			null, null, null, null, "'&'", null, null, null, null, null, null, null, 
+			null, null, null, null, null, null, null, null, null, null, null, null, 
+			null, null, "';;;;'"
 		};
 	}
 	private static final String[] _LITERAL_NAMES = makeLiteralNames();
@@ -244,7 +247,8 @@ public class SasParser extends Parser {
 			"STR_PERCENT_NRBQUOTE_OPEN", "STR_PERCENT_QUOTE_OPEN", "STR_PERCENT_NRQUOTE_OPEN", 
 			"STR_PERCENT_SUPERQ_OPEN", "STR_PERCENT_UNQUOTE_OPEN", "STR_MACRO_CALL", 
 			"STR_SEMI", "STR_LPAREN", "STR_RPAREN", "STR_STRING", "STR_WS", "STR_COMMA", 
-			"STR_TEXT"
+			"STR_TEXT", "RAWDATA_LINE", "RAWDATA_CHAR", "RAWDATA4_CONTENT", "RAWDATA4_SEMI", 
+			"RAWDATA4_END"
 		};
 	}
 	private static final String[] _SYMBOLIC_NAMES = makeSymbolicNames();
@@ -343,7 +347,7 @@ public class SasParser extends Parser {
 			setState(295);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
-			if ((((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -2049L) != 0) || _la==STR_COMMA || _la==STR_TEXT) {
+			if ((((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -2049L) != 0) || ((((_la - 256)) & ~0x3f) == 0 && ((1L << (_la - 256)) & 127L) != 0)) {
 				{
 				setState(294);
 				trailingText();
@@ -553,7 +557,7 @@ public class SasParser extends Parser {
 				setState(315); 
 				_errHandler.sync(this);
 				_la = _input.LA(1);
-			} while ( (((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -2049L) != 0) || _la==STR_COMMA || _la==STR_TEXT );
+			} while ( (((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -2049L) != 0) || ((((_la - 256)) & ~0x3f) == 0 && ((1L << (_la - 256)) & 127L) != 0) );
 			setState(317);
 			match(SEMI);
 			}
@@ -609,7 +613,7 @@ public class SasParser extends Parser {
 				setState(322); 
 				_errHandler.sync(this);
 				_la = _input.LA(1);
-			} while ( (((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -2049L) != 0) || _la==STR_COMMA || _la==STR_TEXT );
+			} while ( (((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -2049L) != 0) || ((((_la - 256)) & ~0x3f) == 0 && ((1L << (_la - 256)) & 127L) != 0) );
 			}
 		}
 		catch (RecognitionException re) {
@@ -648,7 +652,7 @@ public class SasParser extends Parser {
 			setState(328);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
-			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -2049L) != 0) || _la==STR_COMMA || _la==STR_TEXT) {
+			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -2049L) != 0) || ((((_la - 256)) & ~0x3f) == 0 && ((1L << (_la - 256)) & 127L) != 0)) {
 				{
 				{
 				setState(325);
@@ -777,7 +781,7 @@ public class SasParser extends Parser {
 			setState(353);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
-			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & -8226L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -1L) != 0) || _la==STR_COMMA || _la==STR_TEXT) {
+			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & -8226L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -1L) != 0) || ((((_la - 256)) & ~0x3f) == 0 && ((1L << (_la - 256)) & 127L) != 0)) {
 				{
 				{
 				setState(350);
@@ -849,7 +853,7 @@ public class SasParser extends Parser {
 				setState(365); 
 				_errHandler.sync(this);
 				_la = _input.LA(1);
-			} while ( (((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -526337L) != 0) || _la==STR_COMMA || _la==STR_TEXT );
+			} while ( (((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -526337L) != 0) || ((((_la - 256)) & ~0x3f) == 0 && ((1L << (_la - 256)) & 127L) != 0) );
 			}
 		}
 		catch (RecognitionException re) {
@@ -1006,7 +1010,7 @@ public class SasParser extends Parser {
 				setState(383);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
-				if ((((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -20481L) != 0) || _la==STR_COMMA || _la==STR_TEXT) {
+				if ((((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -20481L) != 0) || ((((_la - 256)) & ~0x3f) == 0 && ((1L << (_la - 256)) & 127L) != 0)) {
 					{
 					setState(382);
 					macroParamDefault();
@@ -1063,7 +1067,7 @@ public class SasParser extends Parser {
 				setState(390); 
 				_errHandler.sync(this);
 				_la = _input.LA(1);
-			} while ( (((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -20481L) != 0) || _la==STR_COMMA || _la==STR_TEXT );
+			} while ( (((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -20481L) != 0) || ((((_la - 256)) & ~0x3f) == 0 && ((1L << (_la - 256)) & 127L) != 0) );
 			}
 		}
 		catch (RecognitionException re) {
@@ -1552,7 +1556,7 @@ public class SasParser extends Parser {
 			setState(434);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
-			if ((((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -2049L) != 0) || _la==STR_COMMA || _la==STR_TEXT) {
+			if ((((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -2049L) != 0) || ((((_la - 256)) & ~0x3f) == 0 && ((1L << (_la - 256)) & 127L) != 0)) {
 				{
 				setState(433);
 				macroExprText();
@@ -2171,7 +2175,7 @@ public class SasParser extends Parser {
 				setState(472); 
 				_errHandler.sync(this);
 				_la = _input.LA(1);
-			} while ( (((_la) & ~0x3f) == 0 && ((1L << _la) & -1026L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -1L) != 0) || _la==STR_COMMA || _la==STR_TEXT );
+			} while ( (((_la) & ~0x3f) == 0 && ((1L << _la) & -1026L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -1L) != 0) || ((((_la - 256)) & ~0x3f) == 0 && ((1L << (_la - 256)) & 127L) != 0) );
 			}
 		}
 		catch (RecognitionException re) {
@@ -2319,7 +2323,7 @@ public class SasParser extends Parser {
 				setState(486); 
 				_errHandler.sync(this);
 				_la = _input.LA(1);
-			} while ( (((_la) & ~0x3f) == 0 && ((1L << _la) & -916082L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -2049L) != 0) || _la==STR_COMMA || _la==STR_TEXT );
+			} while ( (((_la) & ~0x3f) == 0 && ((1L << _la) & -916082L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -2049L) != 0) || ((((_la - 256)) & ~0x3f) == 0 && ((1L << (_la - 256)) & 127L) != 0) );
 			}
 		}
 		catch (RecognitionException re) {
@@ -2431,7 +2435,7 @@ public class SasParser extends Parser {
 			setState(498);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
-			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & -8226L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -1L) != 0) || _la==STR_COMMA || _la==STR_TEXT) {
+			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & -8226L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -1L) != 0) || ((((_la - 256)) & ~0x3f) == 0 && ((1L << (_la - 256)) & 127L) != 0)) {
 				{
 				{
 				setState(495);
@@ -2723,7 +2727,7 @@ public class SasParser extends Parser {
 				setState(523); 
 				_errHandler.sync(this);
 				_la = _input.LA(1);
-			} while ( (((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -16385L) != 0) || _la==STR_COMMA || _la==STR_TEXT );
+			} while ( (((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -16385L) != 0) || ((((_la - 256)) & ~0x3f) == 0 && ((1L << (_la - 256)) & 127L) != 0) );
 			setState(525);
 			match(RPAREN);
 			}
@@ -3018,6 +3022,11 @@ public class SasParser extends Parser {
 			case STR_WS:
 			case STR_COMMA:
 			case STR_TEXT:
+			case RAWDATA_LINE:
+			case RAWDATA_CHAR:
+			case RAWDATA4_CONTENT:
+			case RAWDATA4_SEMI:
+			case RAWDATA4_END:
 				enterOuterAlt(_localctx, 1);
 				{
 				setState(527);
@@ -3040,7 +3049,7 @@ public class SasParser extends Parser {
 				setState(532);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
-				while ((((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -16385L) != 0) || _la==STR_COMMA || _la==STR_TEXT) {
+				while ((((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -16385L) != 0) || ((((_la - 256)) & ~0x3f) == 0 && ((1L << (_la - 256)) & 127L) != 0)) {
 					{
 					{
 					setState(529);
@@ -3203,7 +3212,7 @@ public class SasParser extends Parser {
 			setState(550);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
-			if ((((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -2049L) != 0) || _la==STR_COMMA || _la==STR_TEXT) {
+			if ((((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -2049L) != 0) || ((((_la - 256)) & ~0x3f) == 0 && ((1L << (_la - 256)) & 127L) != 0)) {
 				{
 				setState(549);
 				macroPutText();
@@ -3265,7 +3274,7 @@ public class SasParser extends Parser {
 				setState(557); 
 				_errHandler.sync(this);
 				_la = _input.LA(1);
-			} while ( (((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -2049L) != 0) || _la==STR_COMMA || _la==STR_TEXT );
+			} while ( (((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -2049L) != 0) || ((((_la - 256)) & ~0x3f) == 0 && ((1L << (_la - 256)) & 127L) != 0) );
 			}
 		}
 		catch (RecognitionException re) {
@@ -3807,7 +3816,7 @@ public class SasParser extends Parser {
 				setState(588); 
 				_errHandler.sync(this);
 				_la = _input.LA(1);
-			} while ( (((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -2049L) != 0) || _la==STR_COMMA || _la==STR_TEXT );
+			} while ( (((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -2049L) != 0) || ((((_la - 256)) & ~0x3f) == 0 && ((1L << (_la - 256)) & 127L) != 0) );
 			}
 		}
 		catch (RecognitionException re) {
@@ -3846,7 +3855,7 @@ public class SasParser extends Parser {
 			setState(594);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
-			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -2049L) != 0) || _la==STR_COMMA || _la==STR_TEXT) {
+			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -2049L) != 0) || ((((_la - 256)) & ~0x3f) == 0 && ((1L << (_la - 256)) & 127L) != 0)) {
 				{
 				{
 				setState(591);
@@ -4028,7 +4037,7 @@ public class SasParser extends Parser {
 			setState(621);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
-			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -20481L) != 0) || _la==STR_COMMA || _la==STR_TEXT) {
+			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -20481L) != 0) || ((((_la - 256)) & ~0x3f) == 0 && ((1L << (_la - 256)) & 127L) != 0)) {
 				{
 				{
 				setState(618);
@@ -4139,7 +4148,7 @@ public class SasParser extends Parser {
 			setState(633);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
-			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -16385L) != 0) || _la==STR_COMMA || _la==STR_TEXT) {
+			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -16385L) != 0) || ((((_la - 256)) & ~0x3f) == 0 && ((1L << (_la - 256)) & 127L) != 0)) {
 				{
 				setState(631);
 				_errHandler.sync(this);
@@ -4219,7 +4228,7 @@ public class SasParser extends Parser {
 				setState(641); 
 				_errHandler.sync(this);
 				_la = _input.LA(1);
-			} while ( (((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -2049L) != 0) || _la==STR_COMMA || _la==STR_TEXT );
+			} while ( (((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -2049L) != 0) || ((((_la - 256)) & ~0x3f) == 0 && ((1L << (_la - 256)) & 127L) != 0) );
 			}
 		}
 		catch (RecognitionException re) {
@@ -6110,6 +6119,9 @@ public class SasParser extends Parser {
 		public SelectBlockContext selectBlock() {
 			return getRuleContext(SelectBlockContext.class,0);
 		}
+		public CardsStatementContext cardsStatement() {
+			return getRuleContext(CardsStatementContext.class,0);
+		}
 		public AssignmentOrCallStmtContext assignmentOrCallStmt() {
 			return getRuleContext(AssignmentOrCallStmtContext.class,0);
 		}
@@ -6184,9 +6196,6 @@ public class SasParser extends Parser {
 		}
 		public ListStatementContext listStatement() {
 			return getRuleContext(ListStatementContext.class,0);
-		}
-		public CardsStatementContext cardsStatement() {
-			return getRuleContext(CardsStatementContext.class,0);
 		}
 		public PutlogStatementContext putlogStatement() {
 			return getRuleContext(PutlogStatementContext.class,0);
@@ -6269,182 +6278,182 @@ public class SasParser extends Parser {
 				enterOuterAlt(_localctx, 8);
 				{
 				setState(783);
-				assignmentOrCallStmt();
+				cardsStatement();
 				}
 				break;
 			case 9:
 				enterOuterAlt(_localctx, 9);
 				{
 				setState(784);
-				lengthStatement();
+				assignmentOrCallStmt();
 				}
 				break;
 			case 10:
 				enterOuterAlt(_localctx, 10);
 				{
 				setState(785);
-				formatStatement();
+				lengthStatement();
 				}
 				break;
 			case 11:
 				enterOuterAlt(_localctx, 11);
 				{
 				setState(786);
-				informatStatement();
+				formatStatement();
 				}
 				break;
 			case 12:
 				enterOuterAlt(_localctx, 12);
 				{
 				setState(787);
-				labelStatement();
+				informatStatement();
 				}
 				break;
 			case 13:
 				enterOuterAlt(_localctx, 13);
 				{
 				setState(788);
-				attribStatement();
+				labelStatement();
 				}
 				break;
 			case 14:
 				enterOuterAlt(_localctx, 14);
 				{
 				setState(789);
-				retainStatement();
+				attribStatement();
 				}
 				break;
 			case 15:
 				enterOuterAlt(_localctx, 15);
 				{
 				setState(790);
-				arrayStatement();
+				retainStatement();
 				}
 				break;
 			case 16:
 				enterOuterAlt(_localctx, 16);
 				{
 				setState(791);
-				keepStatement();
+				arrayStatement();
 				}
 				break;
 			case 17:
 				enterOuterAlt(_localctx, 17);
 				{
 				setState(792);
-				dropStatement();
+				keepStatement();
 				}
 				break;
 			case 18:
 				enterOuterAlt(_localctx, 18);
 				{
 				setState(793);
-				whereStatement();
+				dropStatement();
 				}
 				break;
 			case 19:
 				enterOuterAlt(_localctx, 19);
 				{
 				setState(794);
-				outputStatement();
+				whereStatement();
 				}
 				break;
 			case 20:
 				enterOuterAlt(_localctx, 20);
 				{
 				setState(795);
-				deleteStatement();
+				outputStatement();
 				}
 				break;
 			case 21:
 				enterOuterAlt(_localctx, 21);
 				{
 				setState(796);
-				putStatement();
+				deleteStatement();
 				}
 				break;
 			case 22:
 				enterOuterAlt(_localctx, 22);
 				{
 				setState(797);
-				inputStatement();
+				putStatement();
 				}
 				break;
 			case 23:
 				enterOuterAlt(_localctx, 23);
 				{
 				setState(798);
-				infileStatement();
+				inputStatement();
 				}
 				break;
 			case 24:
 				enterOuterAlt(_localctx, 24);
 				{
 				setState(799);
-				fileStatement();
+				infileStatement();
 				}
 				break;
 			case 25:
 				enterOuterAlt(_localctx, 25);
 				{
 				setState(800);
-				callStatement();
+				fileStatement();
 				}
 				break;
 			case 26:
 				enterOuterAlt(_localctx, 26);
 				{
 				setState(801);
-				returnStatement();
+				callStatement();
 				}
 				break;
 			case 27:
 				enterOuterAlt(_localctx, 27);
 				{
 				setState(802);
-				abortStatement();
+				returnStatement();
 				}
 				break;
 			case 28:
 				enterOuterAlt(_localctx, 28);
 				{
 				setState(803);
-				stopStatement();
+				abortStatement();
 				}
 				break;
 			case 29:
 				enterOuterAlt(_localctx, 29);
 				{
 				setState(804);
-				errorStatement();
+				stopStatement();
 				}
 				break;
 			case 30:
 				enterOuterAlt(_localctx, 30);
 				{
 				setState(805);
-				gotoStatement();
+				errorStatement();
 				}
 				break;
 			case 31:
 				enterOuterAlt(_localctx, 31);
 				{
 				setState(806);
-				linkStatement();
+				gotoStatement();
 				}
 				break;
 			case 32:
 				enterOuterAlt(_localctx, 32);
 				{
 				setState(807);
-				listStatement();
+				linkStatement();
 				}
 				break;
 			case 33:
 				enterOuterAlt(_localctx, 33);
 				{
 				setState(808);
-				cardsStatement();
+				listStatement();
 				}
 				break;
 			case 34:
@@ -7603,7 +7612,7 @@ public class SasParser extends Parser {
 			setState(987);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
-			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -2049L) != 0) || _la==STR_COMMA || _la==STR_TEXT) {
+			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -2049L) != 0) || ((((_la - 256)) & ~0x3f) == 0 && ((1L << (_la - 256)) & 127L) != 0)) {
 				{
 				{
 				setState(984);
@@ -7662,7 +7671,7 @@ public class SasParser extends Parser {
 			setState(996);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
-			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -2049L) != 0) || _la==STR_COMMA || _la==STR_TEXT) {
+			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -2049L) != 0) || ((((_la - 256)) & ~0x3f) == 0 && ((1L << (_la - 256)) & 127L) != 0)) {
 				{
 				{
 				setState(993);
@@ -7721,7 +7730,7 @@ public class SasParser extends Parser {
 			setState(1005);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
-			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -2049L) != 0) || _la==STR_COMMA || _la==STR_TEXT) {
+			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -2049L) != 0) || ((((_la - 256)) & ~0x3f) == 0 && ((1L << (_la - 256)) & 127L) != 0)) {
 				{
 				{
 				setState(1002);
@@ -8305,7 +8314,7 @@ public class SasParser extends Parser {
 			setState(1103);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
-			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -2049L) != 0) || _la==STR_COMMA || _la==STR_TEXT) {
+			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -2049L) != 0) || ((((_la - 256)) & ~0x3f) == 0 && ((1L << (_la - 256)) & 127L) != 0)) {
 				{
 				{
 				setState(1100);
@@ -8364,7 +8373,7 @@ public class SasParser extends Parser {
 			setState(1112);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
-			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -2049L) != 0) || _la==STR_COMMA || _la==STR_TEXT) {
+			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -2049L) != 0) || ((((_la - 256)) & ~0x3f) == 0 && ((1L << (_la - 256)) & 127L) != 0)) {
 				{
 				{
 				setState(1109);
@@ -8423,7 +8432,7 @@ public class SasParser extends Parser {
 			setState(1121);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
-			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -2049L) != 0) || _la==STR_COMMA || _la==STR_TEXT) {
+			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -2049L) != 0) || ((((_la - 256)) & ~0x3f) == 0 && ((1L << (_la - 256)) & 127L) != 0)) {
 				{
 				{
 				setState(1118);
@@ -8493,7 +8502,7 @@ public class SasParser extends Parser {
 			setState(1133);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
-			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -2049L) != 0) || _la==STR_COMMA || _la==STR_TEXT) {
+			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -2049L) != 0) || ((((_la - 256)) & ~0x3f) == 0 && ((1L << (_la - 256)) & 127L) != 0)) {
 				{
 				{
 				setState(1130);
@@ -8552,7 +8561,7 @@ public class SasParser extends Parser {
 			setState(1142);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
-			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -2049L) != 0) || _la==STR_COMMA || _la==STR_TEXT) {
+			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -2049L) != 0) || ((((_la - 256)) & ~0x3f) == 0 && ((1L << (_la - 256)) & 127L) != 0)) {
 				{
 				{
 				setState(1139);
@@ -8644,7 +8653,7 @@ public class SasParser extends Parser {
 			setState(1154);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
-			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -2049L) != 0) || _la==STR_COMMA || _la==STR_TEXT) {
+			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -2049L) != 0) || ((((_la - 256)) & ~0x3f) == 0 && ((1L << (_la - 256)) & 127L) != 0)) {
 				{
 				{
 				setState(1151);
@@ -8703,7 +8712,7 @@ public class SasParser extends Parser {
 			setState(1163);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
-			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -2049L) != 0) || _la==STR_COMMA || _la==STR_TEXT) {
+			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -2049L) != 0) || ((((_la - 256)) & ~0x3f) == 0 && ((1L << (_la - 256)) & 127L) != 0)) {
 				{
 				{
 				setState(1160);
@@ -8762,7 +8771,7 @@ public class SasParser extends Parser {
 			setState(1172);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
-			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -2049L) != 0) || _la==STR_COMMA || _la==STR_TEXT) {
+			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -2049L) != 0) || ((((_la - 256)) & ~0x3f) == 0 && ((1L << (_la - 256)) & 127L) != 0)) {
 				{
 				{
 				setState(1169);
@@ -9230,7 +9239,7 @@ public class SasParser extends Parser {
 			setState(1239);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
-			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -2049L) != 0) || _la==STR_COMMA || _la==STR_TEXT) {
+			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -2049L) != 0) || ((((_la - 256)) & ~0x3f) == 0 && ((1L << (_la - 256)) & 127L) != 0)) {
 				{
 				{
 				setState(1236);
@@ -9513,7 +9522,7 @@ public class SasParser extends Parser {
 			setState(1268);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
-			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -2049L) != 0) || _la==STR_COMMA || _la==STR_TEXT) {
+			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -2049L) != 0) || ((((_la - 256)) & ~0x3f) == 0 && ((1L << (_la - 256)) & 127L) != 0)) {
 				{
 				{
 				setState(1265);
@@ -9592,7 +9601,7 @@ public class SasParser extends Parser {
 			setState(1278);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
-			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -18433L) != 0) || _la==STR_COMMA || _la==STR_TEXT) {
+			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -18433L) != 0) || ((((_la - 256)) & ~0x3f) == 0 && ((1L << (_la - 256)) & 127L) != 0)) {
 				{
 				{
 				setState(1275);
@@ -9930,6 +9939,11 @@ public class SasParser extends Parser {
 			case STR_WS:
 			case STR_COMMA:
 			case STR_TEXT:
+			case RAWDATA_LINE:
+			case RAWDATA_CHAR:
+			case RAWDATA4_CONTENT:
+			case RAWDATA4_SEMI:
+			case RAWDATA4_END:
 				enterOuterAlt(_localctx, 1);
 				{
 				setState(1294);
@@ -10028,7 +10042,7 @@ public class SasParser extends Parser {
 			setState(1303);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
-			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1537L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -2049L) != 0) || _la==STR_COMMA || _la==STR_TEXT) {
+			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1537L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -2049L) != 0) || ((((_la - 256)) & ~0x3f) == 0 && ((1L << (_la - 256)) & 127L) != 0)) {
 				{
 				{
 				setState(1300);
@@ -10228,7 +10242,7 @@ public class SasParser extends Parser {
 			setState(1325);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
-			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -2049L) != 0) || _la==STR_COMMA || _la==STR_TEXT) {
+			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -2049L) != 0) || ((((_la - 256)) & ~0x3f) == 0 && ((1L << (_la - 256)) & 127L) != 0)) {
 				{
 				{
 				setState(1322);
@@ -10287,7 +10301,7 @@ public class SasParser extends Parser {
 			setState(1334);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
-			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -2049L) != 0) || _la==STR_COMMA || _la==STR_TEXT) {
+			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -2049L) != 0) || ((((_la - 256)) & ~0x3f) == 0 && ((1L << (_la - 256)) & 127L) != 0)) {
 				{
 				{
 				setState(1331);
@@ -10359,7 +10373,7 @@ public class SasParser extends Parser {
 				setState(1343); 
 				_errHandler.sync(this);
 				_la = _input.LA(1);
-			} while ( (((_la) & ~0x3f) == 0 && ((1L << _la) & -11266L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -2049L) != 0) || _la==STR_COMMA || _la==STR_TEXT );
+			} while ( (((_la) & ~0x3f) == 0 && ((1L << _la) & -11266L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -2049L) != 0) || ((((_la - 256)) & ~0x3f) == 0 && ((1L << (_la - 256)) & 127L) != 0) );
 			setState(1345);
 			match(SEMI);
 			}
@@ -10702,6 +10716,11 @@ public class SasParser extends Parser {
 			case STR_WS:
 			case STR_COMMA:
 			case STR_TEXT:
+			case RAWDATA_LINE:
+			case RAWDATA_CHAR:
+			case RAWDATA4_CONTENT:
+			case RAWDATA4_SEMI:
+			case RAWDATA4_END:
 				enterOuterAlt(_localctx, 4);
 				{
 				setState(1357);
@@ -10756,7 +10775,7 @@ public class SasParser extends Parser {
 			setState(1364);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
-			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -2049L) != 0) || _la==STR_COMMA || _la==STR_TEXT) {
+			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -2049L) != 0) || ((((_la - 256)) & ~0x3f) == 0 && ((1L << (_la - 256)) & 127L) != 0)) {
 				{
 				{
 				setState(1361);
@@ -10826,7 +10845,7 @@ public class SasParser extends Parser {
 			setState(1376);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
-			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -2049L) != 0) || _la==STR_COMMA || _la==STR_TEXT) {
+			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -2049L) != 0) || ((((_la - 256)) & ~0x3f) == 0 && ((1L << (_la - 256)) & 127L) != 0)) {
 				{
 				{
 				setState(1373);
@@ -10896,7 +10915,7 @@ public class SasParser extends Parser {
 			setState(1388);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
-			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -2049L) != 0) || _la==STR_COMMA || _la==STR_TEXT) {
+			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -2049L) != 0) || ((((_la - 256)) & ~0x3f) == 0 && ((1L << (_la - 256)) & 127L) != 0)) {
 				{
 				{
 				setState(1385);
@@ -10955,7 +10974,7 @@ public class SasParser extends Parser {
 			setState(1397);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
-			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -2049L) != 0) || _la==STR_COMMA || _la==STR_TEXT) {
+			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -2049L) != 0) || ((((_la - 256)) & ~0x3f) == 0 && ((1L << (_la - 256)) & 127L) != 0)) {
 				{
 				{
 				setState(1394);
@@ -11014,7 +11033,7 @@ public class SasParser extends Parser {
 			setState(1406);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
-			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -2049L) != 0) || _la==STR_COMMA || _la==STR_TEXT) {
+			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -2049L) != 0) || ((((_la - 256)) & ~0x3f) == 0 && ((1L << (_la - 256)) & 127L) != 0)) {
 				{
 				{
 				setState(1403);
@@ -11106,7 +11125,7 @@ public class SasParser extends Parser {
 			setState(1418);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
-			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -2049L) != 0) || _la==STR_COMMA || _la==STR_TEXT) {
+			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -2049L) != 0) || ((((_la - 256)) & ~0x3f) == 0 && ((1L << (_la - 256)) & 127L) != 0)) {
 				{
 				{
 				setState(1415);
@@ -11170,7 +11189,7 @@ public class SasParser extends Parser {
 				setState(1427);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
-				while ((((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -2049L) != 0) || _la==STR_COMMA || _la==STR_TEXT) {
+				while ((((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -2049L) != 0) || ((((_la - 256)) & ~0x3f) == 0 && ((1L << (_la - 256)) & 127L) != 0)) {
 					{
 					{
 					setState(1424);
@@ -11201,7 +11220,7 @@ public class SasParser extends Parser {
 				setState(1435);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
-				while ((((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -2049L) != 0) || _la==STR_COMMA || _la==STR_TEXT) {
+				while ((((_la) & ~0x3f) == 0 && ((1L << _la) & -2L) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & -1L) != 0) || ((((_la - 128)) & ~0x3f) == 0 && ((1L << (_la - 128)) & -1L) != 0) || ((((_la - 192)) & ~0x3f) == 0 && ((1L << (_la - 192)) & -2049L) != 0) || ((((_la - 256)) & ~0x3f) == 0 && ((1L << (_la - 256)) & 127L) != 0)) {
 					{
 					{
 					setState(1432);
@@ -13108,7 +13127,7 @@ public class SasParser extends Parser {
 	}
 
 	public static final String _serializedATN =
-		"\u0004\u0001\u0101\u066a\u0002\u0000\u0007\u0000\u0002\u0001\u0007\u0001"+
+		"\u0004\u0001\u0106\u066a\u0002\u0000\u0007\u0000\u0002\u0001\u0007\u0001"+
 		"\u0002\u0002\u0007\u0002\u0002\u0003\u0007\u0003\u0002\u0004\u0007\u0004"+
 		"\u0002\u0005\u0007\u0005\u0002\u0006\u0007\u0006\u0002\u0007\u0007\u0007"+
 		"\u0002\b\u0007\b\u0002\t\u0007\t\u0002\n\u0007\n\u0002\u000b\u0007\u000b"+
@@ -13692,18 +13711,18 @@ public class SasParser extends Parser {
 		"\u0000\u0000\u0000\u0308\u032f\u0003v;\u0000\u0309\u032f\u0003x<\u0000"+
 		"\u030a\u032f\u0003|>\u0000\u030b\u032f\u0003~?\u0000\u030c\u032f\u0003"+
 		"\u0082A\u0000\u030d\u032f\u0003\u0086C\u0000\u030e\u032f\u0003\u008aE"+
-		"\u0000\u030f\u032f\u0003\u0090H\u0000\u0310\u032f\u0003\u0092I\u0000\u0311"+
-		"\u032f\u0003\u0094J\u0000\u0312\u032f\u0003\u0096K\u0000\u0313\u032f\u0003"+
-		"\u0098L\u0000\u0314\u032f\u0003\u009cN\u0000\u0315\u032f\u0003\u00a2Q"+
-		"\u0000\u0316\u032f\u0003\u00a6S\u0000\u0317\u032f\u0003\u00a8T\u0000\u0318"+
-		"\u032f\u0003\u00aaU\u0000\u0319\u032f\u0003\u00acV\u0000\u031a\u032f\u0003"+
-		"\u00aeW\u0000\u031b\u032f\u0003\u00b0X\u0000\u031c\u032f\u0003\u00b2Y"+
-		"\u0000\u031d\u032f\u0003\u00b6[\u0000\u031e\u032f\u0003\u00b8\\\u0000"+
-		"\u031f\u032f\u0003\u00bc^\u0000\u0320\u032f\u0003\u00c0`\u0000\u0321\u032f"+
-		"\u0003\u00c2a\u0000\u0322\u032f\u0003\u00c4b\u0000\u0323\u032f\u0003\u00c6"+
-		"c\u0000\u0324\u032f\u0003\u00c8d\u0000\u0325\u032f\u0003\u00cae\u0000"+
-		"\u0326\u032f\u0003\u00ccf\u0000\u0327\u032f\u0003\u00d2i\u0000\u0328\u032f"+
-		"\u0003\u00d4j\u0000\u0329\u032f\u0003\u00b4Z\u0000\u032a\u032f\u0003\f"+
+		"\u0000\u030f\u032f\u0003\u00d4j\u0000\u0310\u032f\u0003\u0090H\u0000\u0311"+
+		"\u032f\u0003\u0092I\u0000\u0312\u032f\u0003\u0094J\u0000\u0313\u032f\u0003"+
+		"\u0096K\u0000\u0314\u032f\u0003\u0098L\u0000\u0315\u032f\u0003\u009cN"+
+		"\u0000\u0316\u032f\u0003\u00a2Q\u0000\u0317\u032f\u0003\u00a6S\u0000\u0318"+
+		"\u032f\u0003\u00a8T\u0000\u0319\u032f\u0003\u00aaU\u0000\u031a\u032f\u0003"+
+		"\u00acV\u0000\u031b\u032f\u0003\u00aeW\u0000\u031c\u032f\u0003\u00b0X"+
+		"\u0000\u031d\u032f\u0003\u00b2Y\u0000\u031e\u032f\u0003\u00b6[\u0000\u031f"+
+		"\u032f\u0003\u00b8\\\u0000\u0320\u032f\u0003\u00bc^\u0000\u0321\u032f"+
+		"\u0003\u00c0`\u0000\u0322\u032f\u0003\u00c2a\u0000\u0323\u032f\u0003\u00c4"+
+		"b\u0000\u0324\u032f\u0003\u00c6c\u0000\u0325\u032f\u0003\u00c8d\u0000"+
+		"\u0326\u032f\u0003\u00cae\u0000\u0327\u032f\u0003\u00ccf\u0000\u0328\u032f"+
+		"\u0003\u00d2i\u0000\u0329\u032f\u0003\u00b4Z\u0000\u032a\u032f\u0003\f"+
 		"\u0006\u0000\u032b\u032f\u0003 \u0010\u0000\u032c\u032f\u0003\n\u0005"+
 		"\u0000\u032d\u032f\u0003\u0004\u0002\u0000\u032e\u0308\u0001\u0000\u0000"+
 		"\u0000\u032e\u0309\u0001\u0000\u0000\u0000\u032e\u030a\u0001\u0000\u0000"+

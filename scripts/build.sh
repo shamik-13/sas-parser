@@ -39,5 +39,9 @@ if [ $STATUS -ne 0 ]; then
 fi
 
 echo "Grammar compiled successfully."
+
+# Copy custom lexer class into generated/
+cp "$PROJECT_DIR/grammar/SasCustomLexer.py" "$PROJECT_DIR/generated/SasCustomLexer.py"
+
 echo "Generated files:"
 ls -1 generated/*.py 2>/dev/null || echo "  (no .py files found)"

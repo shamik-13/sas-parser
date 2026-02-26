@@ -358,3 +358,32 @@ STR_TEXT        : ~[();&%,' \t\r\n"]+ ;
 // Note: cards4/datalines4/parmcards4 raw data blocks (terminated by ;;;;)
 // are handled at the parser level. The parser collects tokens via cardsData
 // (up to the first SEMI) and the remaining ;;; are parsed as emptyStatements.
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Lexer Mode for DATALINES/CARDS/PARMCARDS raw data blocks.
+// Entered programmatically by SasCustomLexer when it detects a standalone
+// cards/datalines statement (e.g., KW_DATALINES SEMI at a statement boundary).
+// Data lines are skipped until the terminator: a line containing only ";".
+// ═══════════════════════════════════════════════════════════════════════════
+
+mode RAWDATA;
+
+// Terminator line: semicolon alone on a line (optional whitespace around it)
+RAWDATA_END  : [ \t]* ';' [ \t]* ('\r'? '\n') -> type(SEMI), popMode ;
+
+// Non-terminator line: anything up to and including newline
+RAWDATA_LINE : ~[\r\n]* ('\r'? '\n') -> skip ;
+
+// Catch-all for EOF without trailing newline (malformed input)
+RAWDATA_CHAR : . -> skip ;
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Lexer Mode for DATALINES4/CARDS4/PARMCARDS4 raw data blocks.
+// Same as RAWDATA but terminated by ";;;;" instead of lone ";".
+// ═══════════════════════════════════════════════════════════════════════════
+
+mode RAWDATA4;
+
+RAWDATA4_END     : ';;;;' -> type(SEMI), popMode ;
+RAWDATA4_CONTENT : ~[;]+ -> skip ;
+RAWDATA4_SEMI    : ';' -> skip ;

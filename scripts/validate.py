@@ -60,7 +60,7 @@ def validate_file(filepath: str) -> dict | None:
     try:
         from antlr4 import CommonTokenStream, FileStream, PredictionMode
         from antlr4.error.ErrorStrategy import BailErrorStrategy, DefaultErrorStrategy
-        from SasLexer import SasLexer
+        from SasCustomLexer import SasCustomLexer as SasLexer
         from SasParser import SasParser
     except ImportError as e:
         print(f"ERROR: Cannot import generated parser. Run 'bash scripts/build.sh' first.\n{e}", file=sys.stderr)
