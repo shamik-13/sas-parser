@@ -237,6 +237,37 @@ KW_LOCK       : 'lock'       ;
 KW_UNLOCK     : 'unlock'     ;
 KW_CATNAME    : 'catname'    ;
 
+// ─── SQL-specific Keywords ────────────────────────────────────────────
+KW_SQL           : 'sql'           ;
+KW_ASC           : 'asc'           ;
+KW_DESC          : 'desc'          ;
+KW_CROSS         : 'cross'         ;
+KW_NATURAL       : 'natural'       ;
+KW_CORR          : 'corr'          ;
+KW_CORRESPONDING : 'corresponding' ;
+KW_IS            : 'is'            ;
+KW_CONTAINS      : 'contains'      ;
+KW_CONNECTION    : 'connection'     ;
+KW_CONNECT       : 'connect'       ;
+KW_DISCONNECT    : 'disconnect'    ;
+KW_EXECUTE       : 'execute'       ;
+KW_USING         : 'using'         ;
+KW_RESET         : 'reset'         ;
+KW_VALIDATE      : 'validate'      ;
+KW_INDEX         : 'index'         ;
+KW_PRIMARY       : 'primary'       ;
+KW_KEY           : 'key'           ;
+KW_FOREIGN       : 'foreign'       ;
+KW_REFERENCES    : 'references'    ;
+KW_UNIQUE        : 'unique'        ;
+KW_CONSTRAINT    : 'constraint'    ;
+KW_CHECK         : 'check'         ;
+KW_CASCADE       : 'cascade'       ;
+KW_RESTRICT      : 'restrict'      ;
+KW_SEPARATED     : 'separated'     ;
+KW_TRIMMED       : 'trimmed'       ;
+KW_NOTRIM        : 'notrim'        ;
+
 // ─── Operators & Punctuation ───────────────────────────────────────────────
 DOLLAR        : '$'   ;
 LBRACE        : '{'   ;

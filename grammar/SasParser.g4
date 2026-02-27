@@ -404,7 +404,7 @@ byVariable
     ;
 
 ifThenElseStmt
-    : KW_IF expression KW_THEN doBlock
+    : KW_IF expression KW_THEN doBlock (KW_ELSE (doBlock | actionStatement))?
     | KW_IF expression KW_THEN actionStatement (KW_ELSE (doBlock | actionStatement))?
     | KW_IF expression SEMI   // subsetting IF (filter, no THEN)
     ;
@@ -615,7 +615,8 @@ cardsData
 // ═══════════════════════════════════════════════════════════════════════════
 
 procStep
-    : KW_PROC identifier procOptionToken* SEMI
+    : procSqlStep
+    | KW_PROC identifier procOptionToken* SEMI
       procBody*
       (KW_RUN SEMI | KW_QUIT SEMI)?
     ;
@@ -631,6 +632,319 @@ procBody
 
 procBodyStatement
     : ~(KW_RUN | KW_QUIT | SEMI)* SEMI
+    ;
+
+// ═══════════════════════════════════════════════════════════════════════════
+// PROC SQL
+// ═══════════════════════════════════════════════════════════════════════════
+
+procSqlStep
+    : KW_PROC KW_SQL procSqlOption* SEMI
+      sqlStatement*
+      (KW_QUIT SEMI | KW_RUN SEMI)?
+    ;
+
+procSqlOption
+    : identifier (EQUALS expression)?
+    | MACRO_VAR
+    | MACRO_CALL_NAME (LPAREN macroCallArgs? RPAREN)?
+    ;
+
+sqlStatement
+    : sqlSelectStmt
+    | sqlCreateStmt
+    | sqlInsertStmt
+    | sqlUpdateStmt
+    | sqlDeleteStmt
+    | sqlAlterStmt
+    | sqlDropStmt
+    | sqlDescribeStmt
+    | sqlResetStmt
+    | sqlValidateStmt
+    | sqlConnectStmt
+    | sqlDisconnectStmt
+    | sqlExecuteStmt
+    | macroStatement
+    | lineComment
+    | emptyStatement
+    | sqlGenericStmt
+    ;
+
+sqlGenericStmt
+    : ~(KW_QUIT | KW_RUN | KW_DATA | KW_PROC | KW_LIBNAME | KW_FILENAME
+      | KW_OPTIONS | KW_ODS | KW_TITLE | KW_FOOTNOTE | KW_ENDSAS | SEMI)+ SEMI
+    ;
+
+// ─── SELECT ──────────────────────────────────────────────────────────────
+
+sqlSelectStmt
+    : sqlQueryExpression SEMI
+    ;
+
+sqlQueryExpression
+    : sqlQueryTerm ((KW_UNION | KW_EXCEPT | KW_INTERSECT | KW_OUTER KW_UNION)
+                    (KW_ALL | KW_CORR | KW_CORRESPONDING)* sqlQueryTerm)*
+    ;
+
+sqlQueryTerm
+    : KW_SELECT KW_DISTINCT? sqlSelectList
+      sqlIntoClause?
+      sqlFromClause?
+      sqlWhereClause?
+      sqlGroupByClause?
+      sqlHavingClause?
+      sqlOrderByClause?
+    | LPAREN sqlQueryExpression RPAREN
+    ;
+
+sqlSelectList
+    : STAR
+    | sqlSelectItem (COMMA sqlSelectItem)*
+    ;
+
+sqlSelectItem
+    : STAR
+    | sqlExpression (KW_AS? sqlAlias)? (KW_FORMAT EQUALS expression)? (KW_LABEL EQUALS expression)?
+    | macroIfStmt
+    | macroDoBlock
+    | MACRO_CALL_NAME (LPAREN macroCallArgs? RPAREN)?
+    ;
+
+sqlAlias
+    : identifier
+    | STRING_LITERAL
+    ;
+
+// ─── INTO (SAS-specific) ─────────────────────────────────────────────────
+
+sqlIntoClause
+    : KW_INTO sqlIntoTarget (COMMA sqlIntoTarget)*
+    ;
+
+sqlIntoTarget
+    : COLON (identifier | MACRO_VAR) (KW_SEPARATED KW_BY expression)? (KW_TRIMMED | KW_NOTRIM)?
+    | MACRO_VAR
+    ;
+
+// ─── FROM ────────────────────────────────────────────────────────────────
+
+sqlFromClause
+    : KW_FROM sqlTableSource (COMMA sqlTableSource)*
+    ;
+
+sqlTableSource
+    : sqlTableTerm sqlJoinChain*
+    ;
+
+sqlJoinChain
+    : sqlJoinType? KW_JOIN sqlTableTerm sqlJoinCondition?
+    | COMMA sqlTableTerm
+    ;
+
+sqlJoinType
+    : KW_INNER
+    | KW_LEFT KW_OUTER?
+    | KW_RIGHT KW_OUTER?
+    | KW_FULL KW_OUTER?
+    | KW_CROSS
+    | KW_NATURAL (KW_INNER | KW_LEFT KW_OUTER? | KW_RIGHT KW_OUTER? | KW_FULL KW_OUTER?)?
+    ;
+
+sqlJoinCondition
+    : KW_ON sqlExpression
+    | KW_USING LPAREN identifierList RPAREN
+    ;
+
+sqlTableTerm
+    : LPAREN sqlQueryExpression RPAREN (KW_AS? sqlAlias)?
+    | KW_CONNECTION KW_TO identifier (LPAREN sqlPassthroughContent RPAREN)?
+    | macroDatasetRef (KW_AS? sqlAlias)?
+    | MACRO_CALL_NAME (LPAREN macroCallArgs? RPAREN)? (KW_AS? sqlAlias)?
+    | qualifiedName (KW_AS? sqlAlias)?
+    ;
+
+// ─── WHERE / GROUP BY / HAVING / ORDER BY ────────────────────────────────
+
+sqlWhereClause
+    : KW_WHERE sqlExpression
+    ;
+
+sqlGroupByClause
+    : KW_GROUP KW_BY sqlGroupByItem (COMMA sqlGroupByItem)*
+    ;
+
+sqlGroupByItem
+    : sqlExpression
+    | macroIfStmt
+    | macroDoBlock
+    ;
+
+sqlHavingClause
+    : KW_HAVING sqlExpression
+    ;
+
+sqlOrderByClause
+    : KW_ORDER KW_BY sqlOrderByItem (COMMA sqlOrderByItem)*
+    ;
+
+sqlOrderByItem
+    : sqlExpression (KW_ASC | KW_DESC)?
+    ;
+
+// ─── SQL Expression ──────────────────────────────────────────────────────
+
+sqlExpression
+    : expression sqlExpressionSuffix*
+    ;
+
+sqlExpressionSuffix
+    : KW_IS KW_NOT? (KW_NULL | KW_MISSING)
+    | KW_NOT? KW_BETWEEN expression KW_AND expression
+    | KW_NOT? KW_IN LPAREN (sqlQueryExpression | expressionList) RPAREN
+    | KW_NOT? KW_LIKE expression
+    | KW_NOT? KW_CONTAINS expression
+    | KW_NOT? QUESTION expression
+    ;
+
+sqlWhenClause
+    : KW_WHEN sqlExpression KW_THEN sqlExpression
+    ;
+
+// ─── SQL Table Name (supports macros) ────────────────────────────────────
+
+sqlTableName
+    : qualifiedName datasetOptions?
+    | macroDatasetRef datasetOptions?
+    | MACRO_CALL_NAME (LPAREN macroCallArgs? RPAREN)? datasetOptions?
+    ;
+
+// ─── CREATE ──────────────────────────────────────────────────────────────
+
+sqlCreateStmt
+    : KW_CREATE KW_TABLE sqlTableName (LPAREN sqlColumnDefList RPAREN)?
+      (KW_AS sqlQueryExpression)? SEMI
+    | KW_CREATE KW_UNIQUE? KW_INDEX identifier KW_ON sqlTableName
+      LPAREN sqlOrderByItem (COMMA sqlOrderByItem)* RPAREN KW_UNIQUE? SEMI
+    | KW_CREATE KW_VIEW sqlTableName KW_AS sqlQueryExpression
+      (KW_USING identifier)? SEMI
+    ;
+
+sqlColumnDefList
+    : sqlColumnDef (COMMA sqlColumnDef)*
+    ;
+
+sqlColumnDef
+    : identifier sqlDataType? sqlColumnConstraint*
+    ;
+
+sqlDataType
+    : identifier (LPAREN INT_LITERAL (COMMA INT_LITERAL)? RPAREN)?
+    ;
+
+sqlColumnConstraint
+    : KW_NOT? KW_NULL
+    | KW_UNIQUE
+    | KW_PRIMARY KW_KEY
+    | KW_CHECK LPAREN sqlExpression RPAREN
+    | KW_REFERENCES qualifiedName (LPAREN identifier RPAREN)?
+    | KW_LABEL EQUALS expression
+    | KW_FORMAT EQUALS expression
+    | KW_INFORMAT EQUALS expression
+    ;
+
+// ─── ALTER ───────────────────────────────────────────────────────────────
+
+sqlAlterStmt
+    : KW_ALTER KW_TABLE sqlTableName sqlAlterAction (COMMA sqlAlterAction)* SEMI
+    ;
+
+sqlAlterAction
+    : KW_ADD KW_COLUMN? sqlColumnDef
+    | KW_DROP KW_COLUMN? identifier
+    | KW_MODIFY sqlColumnDef
+    | KW_ADD KW_CONSTRAINT identifier sqlTableConstraint
+    | KW_DROP KW_CONSTRAINT identifier
+    | KW_DROP KW_PRIMARY KW_KEY
+    | KW_DROP KW_FOREIGN KW_KEY identifier
+    ;
+
+sqlTableConstraint
+    : KW_PRIMARY KW_KEY LPAREN identifierList RPAREN
+    | KW_UNIQUE LPAREN identifierList RPAREN
+    | KW_CHECK LPAREN sqlExpression RPAREN
+    | KW_FOREIGN KW_KEY LPAREN identifierList RPAREN
+      KW_REFERENCES qualifiedName LPAREN identifierList RPAREN
+    ;
+
+// ─── DROP ────────────────────────────────────────────────────────────────
+
+sqlDropStmt
+    : KW_DROP (KW_TABLE | KW_VIEW | KW_INDEX) sqlTableName (COMMA sqlTableName)* SEMI
+    ;
+
+// ─── INSERT ──────────────────────────────────────────────────────────────
+
+sqlInsertStmt
+    : KW_INSERT KW_INTO sqlTableName (LPAREN identifierList RPAREN)?
+      (KW_VALUES LPAREN expressionList RPAREN (COMMA LPAREN expressionList RPAREN)*
+      | KW_SET sqlSetClause (COMMA sqlSetClause)*
+      | sqlQueryExpression)
+      SEMI
+    ;
+
+sqlSetClause
+    : identifier EQUALS sqlExpression
+    ;
+
+// ─── UPDATE ──────────────────────────────────────────────────────────────
+
+sqlUpdateStmt
+    : KW_UPDATE sqlTableName (KW_AS? identifier)?
+      KW_SET sqlSetClause (COMMA sqlSetClause)*
+      sqlWhereClause?
+      SEMI
+    ;
+
+// ─── DELETE ──────────────────────────────────────────────────────────────
+
+sqlDeleteStmt
+    : KW_DELETE KW_FROM sqlTableName (KW_AS? identifier)?
+      sqlWhereClause?
+      SEMI
+    ;
+
+// ─── DESCRIBE / RESET / VALIDATE ─────────────────────────────────────────
+
+sqlDescribeStmt
+    : KW_DESCRIBE (KW_TABLE | KW_VIEW) sqlTableName (COMMA sqlTableName)* SEMI
+    | KW_DESCRIBE KW_TABLE KW_CONTENTS KW_OF sqlTableName SEMI
+    ;
+
+sqlResetStmt
+    : KW_RESET procSqlOption* SEMI
+    ;
+
+sqlValidateStmt
+    : KW_VALIDATE sqlQueryExpression SEMI
+    ;
+
+// ─── Pass-Through (CONNECT / DISCONNECT / EXECUTE) ───────────────────────
+
+sqlConnectStmt
+    : KW_CONNECT KW_TO identifier (KW_AS identifier)?
+      (LPAREN sqlPassthroughContent RPAREN)? SEMI
+    ;
+
+sqlDisconnectStmt
+    : KW_DISCONNECT KW_FROM identifier SEMI
+    ;
+
+sqlExecuteStmt
+    : KW_EXECUTE LPAREN sqlPassthroughContent RPAREN KW_BY identifier SEMI
+    ;
+
+sqlPassthroughContent
+    : (nestedParens | ~RPAREN)*
     ;
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -769,6 +1083,9 @@ primaryExpression
     | KW_MISSING LPAREN expression RPAREN
     | KW_OF identifierList
     | DOT identifier   // special missing values: .A through .Z and ._
+    | KW_CASE expression? sqlWhenClause+ (KW_ELSE expression)? KW_END   // SQL CASE
+    | KW_CALCULATED identifier                                           // SQL CALCULATED
+    | KW_EXISTS LPAREN sqlQueryExpression RPAREN                         // SQL EXISTS
     ;
 
 // Macro-concatenated name: var&i, &lib.name, sasjs&i.data, &&ref&i
@@ -782,7 +1099,9 @@ functionCall
     ;
 
 functionCallArgs
-    : functionCallArg (COMMA functionCallArg)*
+    : KW_DISTINCT expression                     // SQL: COUNT(DISTINCT col)
+    | STAR                                        // SQL: COUNT(*)
+    | functionCallArg (COMMA functionCallArg)*
     ;
 
 functionCallArg
@@ -841,4 +1160,12 @@ identifier
     | KW_PARMCARDS | KW_PARMCARDS4
     | KW_ENDSAS | KW_DESCENDING | KW_ALSO
     | KW_PUTLOG | KW_LOCK | KW_UNLOCK | KW_CATNAME
+    | KW_SQL | KW_ASC | KW_DESC | KW_CROSS | KW_NATURAL
+    | KW_CORR | KW_CORRESPONDING | KW_IS | KW_CONTAINS
+    | KW_CONNECTION | KW_CONNECT | KW_DISCONNECT
+    | KW_EXECUTE | KW_USING | KW_RESET | KW_VALIDATE
+    | KW_INDEX | KW_PRIMARY | KW_KEY | KW_FOREIGN
+    | KW_REFERENCES | KW_UNIQUE | KW_CONSTRAINT
+    | KW_CHECK | KW_CASCADE | KW_RESTRICT
+    | KW_SEPARATED | KW_TRIMMED | KW_NOTRIM
     ;
