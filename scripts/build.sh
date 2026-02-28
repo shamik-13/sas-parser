@@ -45,3 +45,10 @@ cp "$PROJECT_DIR/grammar/SasCustomLexer.py" "$PROJECT_DIR/generated/SasCustomLex
 
 echo "Generated files:"
 ls -1 generated/*.py 2>/dev/null || echo "  (no .py files found)"
+
+# ── Build Java parser (optional — non-blocking) ──
+JAVA_BUILD="$PROJECT_DIR/sas-parser-java/build_java.sh"
+if [ -f "$JAVA_BUILD" ]; then
+    echo ""
+    bash "$JAVA_BUILD" || echo "WARNING: Java parser build failed (Python parser still works)." >&2
+fi

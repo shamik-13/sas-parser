@@ -19,6 +19,7 @@ Folder names are relative to sources/sas_source_codes/.
 
 import json
 import os
+import subprocess
 import sys
 from collections import defaultdict
 from datetime import datetime
@@ -28,6 +29,7 @@ sys.setrecursionlimit(5000)
 PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 GENERATED_DIR = os.path.join(PROJECT_DIR, "generated")
 SOURCES_DIR = os.path.join(PROJECT_DIR, "sources", "sas_source_codes")
+JAR_PATH = os.path.join(PROJECT_DIR, "tools", "sas-parser.jar")
 sys.path.insert(0, GENERATED_DIR)
 
 
@@ -338,6 +340,25 @@ def save_json_report(all_occurrences, folders, total_files, elapsed_secs, report
         json.dump(report, f, indent=2)
 
 
+def _java_available() -> bool:
+    """Check if Java parser JAR exists and SAS_PARSER_PYTHON_ONLY is not set."""
+    if os.environ.get("SAS_PARSER_PYTHON_ONLY"):
+        return False
+    return os.path.isfile(JAR_PATH)
+
+
+def audit_files_java(files: list[str], include_proc_body: bool) -> list[dict]:
+    """Run audit via Java parser in a single JVM invocation."""
+    cmd = ["java", "-jar", JAR_PATH, "audit"]
+    if include_proc_body:
+        cmd.append("--include-proc-body")
+    if sys.stderr.isatty():
+        cmd.append("--progress")
+    cmd.extend(files)
+    result = subprocess.run(cmd, stdout=subprocess.PIPE, text=True, timeout=1800)
+    return json.loads(result.stdout)
+
+
 def main():
     args = sys.argv[1:]
 
@@ -365,18 +386,45 @@ def main():
     errors = []
     start_time = datetime.now()
 
-    try:
-        from tqdm import tqdm
-        file_iter = tqdm(files, desc="Auditing", unit="file")
-    except ImportError:
-        file_iter = files
-
-    for filepath in file_iter:
+    # Try Java audit (single JVM, all files at once)
+    use_java = _java_available()
+    if use_java:
         try:
-            occurrences = audit_file(filepath, include_proc_body)
-            all_occurrences.extend(occurrences)
+            print("  (using Java parser)")
+            java_occs = audit_files_java(files, include_proc_body)
+            # Java output doesn't include source_context — add it from source files
+            source_cache = {}
+            for occ in java_occs:
+                filepath = occ["file"]
+                if filepath not in source_cache:
+                    source_cache[filepath] = read_source_lines(filepath)
+                source_lines = source_cache[filepath]
+                start_line = occ["start_line"]
+                end_line = occ["end_line"]
+                context_lines = []
+                for i in range(max(0, start_line - 2), min(len(source_lines), end_line + 1)):
+                    line_text = source_lines[i].rstrip()
+                    marker = ">>>" if start_line <= (i + 1) <= end_line else "   "
+                    context_lines.append(f"  {marker} {i+1:4d} | {line_text}")
+                occ["source_context"] = context_lines
+            all_occurrences = java_occs
         except Exception as e:
-            errors.append({"file": filepath, "error": str(e)})
+            print(f"Java audit failed ({e}), falling back to Python...", file=sys.stderr)
+            use_java = False
+
+    if not use_java:
+        try:
+            from tqdm import tqdm
+            file_iter = tqdm(files, desc="Auditing", unit="file")
+        except ImportError:
+            file_iter = files
+
+        for filepath in file_iter:
+            try:
+                occurrences = audit_file(filepath, include_proc_body)
+                all_occurrences.extend(occurrences)
+            except Exception as e:
+                errors.append({"file": filepath, "error": str(e)})
 
     elapsed = (datetime.now() - start_time).total_seconds()
 

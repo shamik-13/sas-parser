@@ -11,6 +11,7 @@ Exit codes:
 """
 
 import json
+import subprocess
 import sys
 import os
 
@@ -20,7 +21,28 @@ sys.setrecursionlimit(5000)
 # Add generated/ to Python path
 PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 GENERATED_DIR = os.path.join(PROJECT_DIR, "generated")
+JAR_PATH = os.path.join(PROJECT_DIR, "tools", "sas-parser.jar")
 sys.path.insert(0, GENERATED_DIR)
+
+
+def _java_available() -> bool:
+    """Check if Java parser JAR exists and SAS_PARSER_PYTHON_ONLY is not set."""
+    if os.environ.get("SAS_PARSER_PYTHON_ONLY"):
+        return False
+    return os.path.isfile(JAR_PATH)
+
+
+def validate_file_java(filepath: str) -> dict | None:
+    """Validate using the Java parser. Returns None on pass, error dict on fail."""
+    result = subprocess.run(
+        ["java", "-jar", JAR_PATH, "validate", filepath],
+        capture_output=True, text=True, timeout=120,
+    )
+    if result.returncode == 0:
+        return None
+    if result.returncode == 1:
+        return json.loads(result.stdout)
+    raise RuntimeError(f"Java parser error (exit {result.returncode}): {result.stderr[:200]}")
 
 
 class CollectingErrorListener:
@@ -142,7 +164,15 @@ def main():
         sys.exit(2)
 
     filepath = sys.argv[1]
-    result = validate_file(filepath)
+
+    # Try Java fast path first
+    if _java_available():
+        try:
+            result = validate_file_java(filepath)
+        except Exception:
+            result = validate_file(filepath)
+    else:
+        result = validate_file(filepath)
 
     if result is None:
         print(f"PASS: {filepath}")

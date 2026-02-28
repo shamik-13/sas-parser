@@ -12,6 +12,9 @@ wheels/
 # ANTLR generated code
 generated/
 
+# Java parser build artifacts
+sas-parser-java/build/
+
 # Reports and failures (regenerated)
 reports/
 failures/

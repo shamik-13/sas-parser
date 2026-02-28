@@ -17,6 +17,7 @@ from datetime import datetime
 
 PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SOURCES_DIR = os.path.join(PROJECT_DIR, "sources", "sas_source_codes")
+JAR_PATH = os.path.join(PROJECT_DIR, "tools", "sas-parser.jar")
 
 
 def find_sas_files(folders: list[str]) -> list[str]:
@@ -31,6 +32,37 @@ def find_sas_files(folders: list[str]) -> list[str]:
             if entry.lower().endswith(".sas"):
                 files.append(os.path.join(folder_path, entry))
     return files
+
+
+def _java_available() -> bool:
+    """Check if Java parser JAR exists and SAS_PARSER_PYTHON_ONLY is not set."""
+    if os.environ.get("SAS_PARSER_PYTHON_ONLY"):
+        return False
+    return os.path.isfile(JAR_PATH)
+
+
+def validate_batch_java(files: list[str]) -> dict[str, dict | None]:
+    """Validate all files in a single JVM invocation. Returns {filepath: error_dict_or_None}."""
+    cmd = ["java", "-jar", JAR_PATH, "validate", "--batch"]
+    if sys.stderr.isatty():
+        cmd.append("--progress")
+    cmd.extend(files)
+    result = subprocess.run(cmd, stdout=subprocess.PIPE, text=True, timeout=1800)
+    results = {}
+    for line in result.stdout.strip().split("\n"):
+        if not line:
+            continue
+        obj = json.loads(line)
+        filepath = obj["file"]
+        if obj["status"] == "pass":
+            results[filepath] = None
+        else:
+            results[filepath] = {
+                "file": filepath,
+                "error_count": obj.get("error_count", 0),
+                "errors": obj.get("errors", []),
+            }
+    return results
 
 
 def validate_file(filepath: str) -> dict | None:
@@ -79,28 +111,55 @@ def run_batch(folders: list[str]) -> dict:
     failed = []
     error_clusters = defaultdict(lambda: {"count": 0, "files": [], "sample_error": None})
 
-    try:
-        from tqdm import tqdm
-        file_iter = tqdm(files, desc="Validating", unit="file")
-    except ImportError:
-        file_iter = files
-        print(f"Testing {len(files)} files...")
+    # Try Java batch mode (single JVM, all files at once)
+    use_java = _java_available()
+    if use_java:
+        try:
+            print(f"Testing {len(files)} files (Java parser)...")
+            java_results = validate_batch_java(files)
+            for filepath in files:
+                result = java_results.get(filepath)
+                if result is None:
+                    passed.append(filepath)
+                else:
+                    failed.append(filepath)
+                    if result.get("errors"):
+                        first_error = result["errors"][0]
+                        key = error_cluster_key(first_error["message"])
+                        cluster = error_clusters[key]
+                        cluster["count"] += 1
+                        cluster["files"].append(filepath)
+                        if cluster["sample_error"] is None:
+                            cluster["sample_error"] = first_error
+        except Exception as e:
+            print(f"Java batch failed ({e}), falling back to Python...", file=sys.stderr)
+            use_java = False
+            passed.clear()
+            failed.clear()
+            error_clusters.clear()
 
-    for filepath in file_iter:
-        result = validate_file(filepath)
-        if result is None:
-            passed.append(filepath)
-        else:
-            failed.append(filepath)
-            # Cluster errors
-            if result.get("errors"):
-                first_error = result["errors"][0]
-                key = error_cluster_key(first_error["message"])
-                cluster = error_clusters[key]
-                cluster["count"] += 1
-                cluster["files"].append(filepath)
-                if cluster["sample_error"] is None:
-                    cluster["sample_error"] = first_error
+    if not use_java:
+        try:
+            from tqdm import tqdm
+            file_iter = tqdm(files, desc="Validating", unit="file")
+        except ImportError:
+            file_iter = files
+            print(f"Testing {len(files)} files...")
+
+        for filepath in file_iter:
+            result = validate_file(filepath)
+            if result is None:
+                passed.append(filepath)
+            else:
+                failed.append(filepath)
+                if result.get("errors"):
+                    first_error = result["errors"][0]
+                    key = error_cluster_key(first_error["message"])
+                    cluster = error_clusters[key]
+                    cluster["count"] += 1
+                    cluster["files"].append(filepath)
+                    if cluster["sample_error"] is None:
+                        cluster["sample_error"] = first_error
 
     # Build report
     total = len(files)

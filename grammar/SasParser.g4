@@ -16,7 +16,15 @@ programStatement
     | dataStep
     | procStep
     | globalStatement
+    | ifThenElseStmt
+    | orphanElseStmt
+    | doBlock
+    | selectBlock
+    | orphanWhenStmt
+    | orphanOtherwiseStmt
     | cardsStatement
+    | KW_RUN SEMI
+    | KW_QUIT SEMI
     | lineComment
     | emptyStatement
     | unknownStatement
@@ -39,7 +47,7 @@ trailingText
 // Line comment: * text; — handled in parser because '*' is ambiguous in the lexer
 // (multiplication vs. comment start). Only valid at statement boundaries.
 lineComment
-    : STAR ~(SEMI)* SEMI
+    : (STAR | POWER_OP) ~(SEMI)* SEMI
     ;
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -83,9 +91,14 @@ macroBody
     | dataStep
     | procStep
     | globalStatement
+    | dataStepStatement
+    | sqlStatementInMacro
+    | KW_RUN SEMI
+    | KW_QUIT SEMI
     | lineComment
     | emptyStatement
     | macroGenericText
+    | macroBodyFallback
     ;
 
 macroGenericText
@@ -97,7 +110,27 @@ macroGenericToken
        | PERCENT_LET | PERCENT_PUT | PERCENT_RETURN | PERCENT_GOTO | PERCENT_GLOBAL
        | PERCENT_LOCAL | PERCENT_INCLUDE | PERCENT_INC | PERCENT_ABORT
        | KW_DATA | KW_PROC | KW_LIBNAME | KW_FILENAME | KW_OPTIONS | KW_ODS
-       | KW_TITLE | KW_FOOTNOTE | KW_DM | KW_SYSTASK | KW_ENDSAS | KW_LOCK)
+       | KW_TITLE | KW_FOOTNOTE | KW_TITLE_N | KW_FOOTNOTE_N
+       | KW_GOPTIONS | KW_SYMBOL_N | KW_AXIS_N | KW_PATTERN_N | KW_LEGEND_N
+       | KW_RUN | KW_QUIT
+       | KW_DM | KW_SYSTASK | KW_ENDSAS | KW_LOCK)
+    ;
+
+// Fallback for macroBody: catches tokens excluded from macroGenericToken
+// (KW_DATA, KW_PROC, KW_RUN, etc.) when their structured alternatives fail.
+// Prevents cascading macroDefinition failure when e.g. a data step closes
+// prematurely and leaves a KW_DATA token at the macroBody level.
+// Uses stmtBodyToken to consume macro constructs (%do/%end, %if/%then) atomically.
+macroBodyFallback
+    : macroBodyFallbackToken stmtBodyToken* SEMI
+    ;
+
+macroBodyFallbackToken
+    : KW_DATA | KW_PROC | KW_LIBNAME | KW_FILENAME | KW_OPTIONS | KW_ODS
+    | KW_TITLE | KW_FOOTNOTE | KW_TITLE_N | KW_FOOTNOTE_N
+    | KW_GOPTIONS | KW_SYMBOL_N | KW_AXIS_N | KW_PATTERN_N | KW_LEGEND_N
+    | KW_RUN | KW_QUIT
+    | KW_DM | KW_SYSTASK | KW_ENDSAS | KW_LOCK
     ;
 
 // ─── Macro Statements ──────────────────────────────────────────────────────
@@ -114,6 +147,8 @@ macroStatement
     | macroLocalStmt
     | macroIncludeStmt
     | macroAbortStmt
+    | macroOtherStmt
+    | macroFuncCall SEMI      // standalone %sysfunc(...);, %eval(...);, etc.
     | macroCallStmt
     ;
 
@@ -139,7 +174,8 @@ macroVarNameList
 
 macroIfStmt
     : PERCENT_IF macroCondition PERCENT_THEN macroIfAction
-      (PERCENT_ELSE macroIfAction)?
+      (PERCENT_ELSE PERCENT_IF macroCondition PERCENT_THEN macroIfAction)*   // flattened else-if chain
+      (PERCENT_ELSE macroIfAction)?                                          // optional final else
     ;
 
 macroCondition
@@ -150,9 +186,25 @@ macroCondToken
     : ~(PERCENT_THEN)
     ;
 
+// Inline %if for chained %then %if patterns (e.g., %if A %then %if B %then %do;...%end;).
+// This does NOT include the flattened (%else %if ...)* loop — that stays in macroIfStmt only.
+// This avoids ambiguity: %else %if always binds to the outermost macroIfStmt's flattened loop
+// when the action is not another %if. ANTLR's greedy default handles the dangling else correctly.
 macroIfAction
-    : macroDoBlock
-    | macroStatement
+    : PERCENT_IF macroCondition PERCENT_THEN macroIfAction
+      (PERCENT_ELSE macroIfAction)?
+    | macroDoBlock
+    | macroLetStmt
+    | macroPutStmt
+    | macroReturnStmt
+    | macroGotoStmt
+    | macroLabelStmt
+    | macroGlobalStmt
+    | macroLocalStmt
+    | macroIncludeStmt
+    | macroAbortStmt
+    | macroOtherStmt
+    | macroCallStmt
     | macroActionText SEMI
     ;
 
@@ -193,9 +245,14 @@ macroDoBody
     | dataStep
     | procStep
     | globalStatement
+    | dataStepStatement
+    | sqlStatementInMacro
+    | KW_RUN SEMI
+    | KW_QUIT SEMI
     | lineComment
     | emptyStatement
     | macroGenericText
+    | macroBodyFallback
     ;
 
 macroPutStmt
@@ -229,6 +286,11 @@ macroIncludeTarget
 
 macroAbortStmt
     : PERCENT_ABORT ~(SEMI)* SEMI
+    ;
+
+macroOtherStmt
+    : (PERCENT_SYSCALL | PERCENT_SYSEXEC | PERCENT_WINDOW | PERCENT_DISPLAY
+       | PERCENT_INPUT | PERCENT_COPY | PERCENT_LIST | PERCENT_RUN) ~(SEMI)* SEMI
     ;
 
 macroCallStmt
@@ -327,7 +389,7 @@ macroDatasetRef
     ;
 
 qualifiedName
-    : identifier (DOT identifier?)?
+    : identifier (DOT (identifier | MACRO_VAR | AMP_AMP | INT_LITERAL)*)?
     ;
 
 datasetOptions
@@ -344,9 +406,14 @@ dataStepStatement
     | mergeStatement
     | byStatement
     | ifThenElseStmt
+    | orphanElseStmt
     | doBlock
     | selectBlock
+    | orphanWhenStmt
+    | orphanOtherwiseStmt
     | cardsStatement
+    | declareStatement
+    | macroStatement
     | assignmentOrCallStmt
     | lengthStatement
     | formatStatement
@@ -357,6 +424,7 @@ dataStepStatement
     | arrayStatement
     | keepStatement
     | dropStatement
+    | renameStatement
     | whereStatement
     | outputStatement
     | deleteStatement
@@ -374,7 +442,6 @@ dataStepStatement
     | listStatement
     | putlogStatement
     | macroDefinition
-    | macroStatement
     | lineComment
     | emptyStatement
     ;
@@ -384,7 +451,7 @@ stmtLabel
     ;
 
 setStatement
-    : KW_SET datasetName* setOptions? (SLASH identifier)? SEMI
+    : KW_SET (datasetName | macroDoBlock | macroIfStmt | MACRO_CALL_NAME (LPAREN macroCallArgs? RPAREN)?)* setOptions? (SLASH identifier)? SEMI
     ;
 
 setOptions
@@ -392,11 +459,11 @@ setOptions
     ;
 
 mergeStatement
-    : KW_MERGE datasetName+ SEMI
+    : KW_MERGE (datasetName | macroDoBlock | macroIfStmt | MACRO_CALL_NAME (LPAREN macroCallArgs? RPAREN)?)+ SEMI
     ;
 
 byStatement
-    : KW_BY byVariable+ SEMI
+    : KW_BY (byVariable | macroDoBlock | macroIfStmt | MACRO_CALL_NAME (LPAREN macroCallArgs? RPAREN)?)+ SEMI
     ;
 
 byVariable
@@ -404,13 +471,15 @@ byVariable
     ;
 
 ifThenElseStmt
-    : KW_IF expression KW_THEN doBlock (KW_ELSE (doBlock | actionStatement))?
-    | KW_IF expression KW_THEN actionStatement (KW_ELSE (doBlock | actionStatement))?
+    : KW_IF expression KW_THEN doBlock (KW_ELSE (doBlock | actionStatement | SEMI))?
+    | KW_IF expression KW_THEN actionStatement (KW_ELSE (doBlock | actionStatement | SEMI))?
+    | KW_IF expression KW_THEN SEMI (KW_ELSE (doBlock | actionStatement | SEMI))?   // empty THEN: if 1=0 then;
     | KW_IF expression SEMI   // subsetting IF (filter, no THEN)
     ;
 
 actionStatement
     : assignmentOrCallStmt
+    | setStatement
     | outputStatement
     | deleteStatement
     | returnStatement
@@ -437,9 +506,19 @@ doBlock
     ;
 
 doSpec
-    : identifier EQUALS expression KW_TO expression (KW_BY expression)?
-    | identifier EQUALS expression (COMMA expression)+   // DO over value list
+    : identifier EQUALS expression doSpecSuffix?
     | KW_WHILE LPAREN expression RPAREN
+    | KW_UNTIL LPAREN expression RPAREN
+    ;
+
+doSpecSuffix
+    : KW_TO expression (KW_BY expression)? doCondition?   // DO i=1 TO 10 [BY 2] [WHILE/UNTIL]
+    | KW_BY expression doCondition?                        // DO i=1 BY 1 [WHILE/UNTIL]
+    | (COMMA expression)+                                  // DO i=1, 2, 3
+    ;
+
+doCondition
+    : KW_WHILE LPAREN expression RPAREN
     | KW_UNTIL LPAREN expression RPAREN
     ;
 
@@ -458,22 +537,52 @@ otherwiseClause
     : KW_OTHERWISE actionStatement?
     ;
 
+// Orphaned block construct parts — when SAS code is split across macro boundaries,
+// else/when/otherwise can appear without their parent if/select in the same scope.
+orphanElseStmt
+    : KW_ELSE doBlock
+    | KW_ELSE ifThenElseStmt
+    | KW_ELSE actionStatement
+    ;
+
+orphanWhenStmt
+    : KW_WHEN LPAREN expressionList RPAREN actionStatement
+    ;
+
+orphanOtherwiseStmt
+    : KW_OTHERWISE actionStatement?
+    ;
+
 assignmentOrCallStmt
     : expression SEMI
     ;
 
+// Token sequence that can include embedded macro constructs.
+// Like ~(SEMI)* but consumes complete %do/%end and %if/%then blocks
+// without being split by their internal semicolons.
+stmtBodyToken
+    : macroDoBlock
+    | macroIfStmt
+    | MACRO_CALL_NAME (LPAREN macroCallArgs? RPAREN)?
+    | ~(SEMI)
+    ;
+
+declareStatement
+    : KW_DECLARE identifier stmtBodyToken* SEMI   // declare hash h(), declare javaobj j(...)
+    ;
+
 lengthStatement
-    : KW_LENGTH ~(SEMI)* SEMI
+    : KW_LENGTH stmtBodyToken* SEMI
     ;
 
 // DOLLAR is defined in the lexer grammar
 
 formatStatement
-    : KW_FORMAT ~(SEMI)* SEMI
+    : KW_FORMAT stmtBodyToken* SEMI
     ;
 
 informatStatement
-    : KW_INFORMAT ~(SEMI)* SEMI
+    : KW_INFORMAT stmtBodyToken* SEMI
     ;
 
 labelStatement
@@ -500,31 +609,31 @@ attribSpec
     ;
 
 retainStatement
-    : KW_RETAIN retainItem* SEMI
-    ;
-
-retainItem
-    : identifier+ expression?
+    : KW_RETAIN stmtBodyToken* SEMI
     ;
 
 arrayStatement
-    : KW_ARRAY ~(SEMI)* SEMI
+    : KW_ARRAY stmtBodyToken* SEMI
     ;
 
 keepStatement
-    : KW_KEEP ~(SEMI)* SEMI
+    : KW_KEEP stmtBodyToken* SEMI
     ;
 
 dropStatement
-    : KW_DROP ~(SEMI)* SEMI
+    : KW_DROP stmtBodyToken* SEMI
+    ;
+
+renameStatement
+    : KW_RENAME stmtBodyToken* SEMI
     ;
 
 whereStatement
-    : KW_WHERE KW_ALSO? ~(SEMI)* SEMI
+    : KW_WHERE KW_ALSO? stmtBodyToken* SEMI
     ;
 
 outputStatement
-    : KW_OUTPUT ~(SEMI)* SEMI
+    : KW_OUTPUT stmtBodyToken* SEMI
     ;
 
 deleteStatement
@@ -532,15 +641,15 @@ deleteStatement
     ;
 
 putStatement
-    : KW_PUT ~(SEMI)* SEMI
+    : KW_PUT stmtBodyToken* SEMI
     ;
 
 putlogStatement
-    : KW_PUTLOG ~(SEMI)* SEMI
+    : KW_PUTLOG stmtBodyToken* SEMI
     ;
 
 inputStatement
-    : KW_INPUT ~(SEMI)* SEMI
+    : KW_INPUT stmtBodyToken* SEMI
     ;
 
 infileStatement
@@ -570,7 +679,7 @@ returnStatement
     ;
 
 abortStatement
-    : KW_ABORT expression? SEMI
+    : KW_ABORT stmtBodyToken* SEMI
     ;
 
 stopStatement
@@ -578,7 +687,7 @@ stopStatement
     ;
 
 errorStatement
-    : KW_ERROR ~(SEMI)* SEMI
+    : KW_ERROR stmtBodyToken* SEMI
     ;
 
 gotoStatement
@@ -650,6 +759,20 @@ procSqlOption
     | MACRO_CALL_NAME (LPAREN macroCallArgs? RPAREN)?
     ;
 
+// SQL statements that can appear inside %do/%end blocks within PROC SQL.
+// When a PROC SQL contains %if/%then/%do blocks, the SQL statements inside
+// the macro blocks are parsed by macroDoBody, which doesn't have the full
+// sqlStatement rule. This subset handles the most common SQL statements.
+sqlStatementInMacro
+    : sqlSelectStmt
+    | sqlCreateStmt
+    | sqlInsertStmt
+    | sqlUpdateStmt
+    | sqlDeleteStmt
+    | sqlAlterStmt
+    | sqlDropStmt
+    ;
+
 sqlStatement
     : sqlSelectStmt
     | sqlCreateStmt
@@ -672,7 +795,9 @@ sqlStatement
 
 sqlGenericStmt
     : ~(KW_QUIT | KW_RUN | KW_DATA | KW_PROC | KW_LIBNAME | KW_FILENAME
-      | KW_OPTIONS | KW_ODS | KW_TITLE | KW_FOOTNOTE | KW_ENDSAS | SEMI)+ SEMI
+      | KW_OPTIONS | KW_ODS | KW_TITLE | KW_FOOTNOTE | KW_ENDSAS
+      | PERCENT_END | PERCENT_ELSE | PERCENT_MEND | PERCENT_MACRO
+      | SEMI)+ SEMI
     ;
 
 // ─── SELECT ──────────────────────────────────────────────────────────────
@@ -690,35 +815,61 @@ sqlQueryTerm
     : KW_SELECT KW_DISTINCT? sqlSelectList
       sqlIntoClause?
       sqlFromClause?
+      sqlMacroInterleave*
       sqlWhereClause?
+      sqlMacroInterleave*
       sqlGroupByClause?
+      sqlMacroInterleave*
       sqlHavingClause?
+      sqlMacroInterleave*
       sqlOrderByClause?
     | LPAREN sqlQueryExpression RPAREN
     ;
 
+// Macro conditionals between SQL clauses (e.g., %if (cond) %then %do; where x=1 %end;)
+sqlMacroInterleave
+    : macroIfStmt
+    | macroDoBlock
+    | MACRO_CALL_NAME (LPAREN macroCallArgs? RPAREN)?
+    ;
+
 sqlSelectList
-    : STAR
-    | sqlSelectItem (COMMA sqlSelectItem)*
+    : sqlSelectItem ((COMMA sqlSelectItem) | sqlMacroInterleave)*
     ;
 
 sqlSelectItem
-    : STAR
-    | sqlExpression (KW_AS? sqlAlias)? (KW_FORMAT EQUALS expression)? (KW_LABEL EQUALS expression)?
+    : (identifier DOT)? STAR
+    | sqlExpression sqlSelectModifier* (KW_AS? sqlAlias)? sqlSelectModifier*
     | macroIfStmt
     | macroDoBlock
     | MACRO_CALL_NAME (LPAREN macroCallArgs? RPAREN)?
     ;
 
+sqlSelectModifier
+    : (KW_FORMAT | KW_INFORMAT) EQUALS sqlFormatSpec
+    | KW_LABEL EQUALS expression
+    | KW_LENGTH EQUALS expression
+    | STRING_LITERAL                    // bare column label: select x 'My Label' from t
+    ;
+
+// SAS format spec: e.g., 12., $20., best12., date9., $char20., comma12.2
+sqlFormatSpec
+    : DOLLAR? identifier? FLOAT_LITERAL numericLiteral?
+    | DOLLAR? identifier? numericLiteral DOT numericLiteral?
+    | identifier DOT numericLiteral?
+    ;
+
 sqlAlias
     : identifier
+    | macroConcatName   // &domain.RESCAT, &prefix._name
+    | MACRO_VAR         // &alias
     | STRING_LITERAL
     ;
 
 // ─── INTO (SAS-specific) ─────────────────────────────────────────────────
 
 sqlIntoClause
-    : KW_INTO sqlIntoTarget (COMMA sqlIntoTarget)*
+    : KW_INTO sqlIntoTarget ((COMMA sqlIntoTarget) | sqlMacroInterleave)*
     ;
 
 sqlIntoTarget
@@ -757,10 +908,11 @@ sqlJoinCondition
 
 sqlTableTerm
     : LPAREN sqlQueryExpression RPAREN (KW_AS? sqlAlias)?
-    | KW_CONNECTION KW_TO identifier (LPAREN sqlPassthroughContent RPAREN)?
-    | macroDatasetRef (KW_AS? sqlAlias)?
+    | KW_CONNECTION KW_TO (identifier | MACRO_VAR) (LPAREN sqlPassthroughContent RPAREN)? (KW_AS? sqlAlias)?
+    | identifier DOT macroDatasetRef datasetOptions? (KW_AS? sqlAlias)?
+    | macroDatasetRef datasetOptions? (KW_AS? sqlAlias)?
     | MACRO_CALL_NAME (LPAREN macroCallArgs? RPAREN)? (KW_AS? sqlAlias)?
-    | qualifiedName (KW_AS? sqlAlias)?
+    | qualifiedName datasetOptions? (KW_AS? sqlAlias)?
     ;
 
 // ─── WHERE / GROUP BY / HAVING / ORDER BY ────────────────────────────────
@@ -788,7 +940,7 @@ sqlOrderByClause
     ;
 
 sqlOrderByItem
-    : sqlExpression (KW_ASC | KW_DESC)?
+    : sqlExpression (KW_ASC | KW_DESC | KW_DESCENDING)?
     ;
 
 // ─── SQL Expression ──────────────────────────────────────────────────────
@@ -800,7 +952,7 @@ sqlExpression
 sqlExpressionSuffix
     : KW_IS KW_NOT? (KW_NULL | KW_MISSING)
     | KW_NOT? KW_BETWEEN expression KW_AND expression
-    | KW_NOT? KW_IN LPAREN (sqlQueryExpression | expressionList) RPAREN
+    | KW_NOT? KW_IN LPAREN (sqlQueryExpression | expression (COMMA? expression)*) RPAREN
     | KW_NOT? KW_LIKE expression
     | KW_NOT? KW_CONTAINS expression
     | KW_NOT? QUESTION expression
@@ -810,23 +962,25 @@ sqlWhenClause
     : KW_WHEN sqlExpression KW_THEN sqlExpression
     ;
 
-// ─── SQL Table Name (supports macros) ────────────────────────────────────
+// ─── SQL Table Name (supports macros and concatenated names) ─────────────
+
+sqlTableNamePart
+    : (identifier | MACRO_VAR | AMP_AMP | INT_LITERAL)+
+    ;
 
 sqlTableName
-    : qualifiedName datasetOptions?
-    | macroDatasetRef datasetOptions?
+    : sqlTableNamePart (DOT sqlTableNamePart)? datasetOptions?
     | MACRO_CALL_NAME (LPAREN macroCallArgs? RPAREN)? datasetOptions?
     ;
 
 // ─── CREATE ──────────────────────────────────────────────────────────────
 
 sqlCreateStmt
-    : KW_CREATE KW_TABLE sqlTableName (LPAREN sqlColumnDefList RPAREN)?
-      (KW_AS sqlQueryExpression)? SEMI
+    : KW_CREATE (KW_TABLE | KW_VIEW | macroFuncCall | MACRO_CALL_NAME (LPAREN macroCallArgs? RPAREN)? | MACRO_VAR)
+      sqlTableName (LPAREN sqlColumnDefList RPAREN)?
+      (KW_AS sqlQueryExpression)? (KW_USING identifier)? SEMI
     | KW_CREATE KW_UNIQUE? KW_INDEX identifier KW_ON sqlTableName
       LPAREN sqlOrderByItem (COMMA sqlOrderByItem)* RPAREN KW_UNIQUE? SEMI
-    | KW_CREATE KW_VIEW sqlTableName KW_AS sqlQueryExpression
-      (KW_USING identifier)? SEMI
     ;
 
 sqlColumnDefList
@@ -886,8 +1040,8 @@ sqlDropStmt
 
 sqlInsertStmt
     : KW_INSERT KW_INTO sqlTableName (LPAREN identifierList RPAREN)?
-      (KW_VALUES LPAREN expressionList RPAREN (COMMA LPAREN expressionList RPAREN)*
-      | KW_SET sqlSetClause (COMMA sqlSetClause)*
+      ( (KW_VALUES LPAREN expressionList RPAREN)+
+      | KW_SET sqlSetClause ((COMMA sqlSetClause) | sqlMacroInterleave)*
       | sqlQueryExpression)
       SEMI
     ;
@@ -900,7 +1054,7 @@ sqlSetClause
 
 sqlUpdateStmt
     : KW_UPDATE sqlTableName (KW_AS? identifier)?
-      KW_SET sqlSetClause (COMMA sqlSetClause)*
+      KW_SET sqlSetClause ((COMMA sqlSetClause) | sqlMacroInterleave)*
       sqlWhereClause?
       SEMI
     ;
@@ -931,16 +1085,16 @@ sqlValidateStmt
 // ─── Pass-Through (CONNECT / DISCONNECT / EXECUTE) ───────────────────────
 
 sqlConnectStmt
-    : KW_CONNECT KW_TO identifier (KW_AS identifier)?
+    : KW_CONNECT (KW_TO | KW_USING) (identifier | MACRO_VAR) (KW_AS identifier)?
       (LPAREN sqlPassthroughContent RPAREN)? SEMI
     ;
 
 sqlDisconnectStmt
-    : KW_DISCONNECT KW_FROM identifier SEMI
+    : KW_DISCONNECT KW_FROM (identifier | MACRO_VAR) SEMI
     ;
 
 sqlExecuteStmt
-    : KW_EXECUTE LPAREN sqlPassthroughContent RPAREN KW_BY identifier SEMI
+    : KW_EXECUTE LPAREN sqlPassthroughContent RPAREN KW_BY (identifier | MACRO_VAR) SEMI
     ;
 
 sqlPassthroughContent
@@ -958,6 +1112,7 @@ globalStatement
     | odsStatement
     | titleStatement
     | footnoteStatement
+    | graphStatement
     | dmStatement
     | systaskStatement
     | endsasStatement
@@ -966,11 +1121,11 @@ globalStatement
     ;
 
 libnameStatement
-    : KW_LIBNAME ~(SEMI)* SEMI
+    : KW_LIBNAME stmtBodyToken* SEMI
     ;
 
 filenameStatement
-    : KW_FILENAME ~(SEMI)* SEMI
+    : KW_FILENAME stmtBodyToken* SEMI
     ;
 
 optionsStatement
@@ -985,23 +1140,27 @@ optionsItem
     ;
 
 odsStatement
-    : KW_ODS ~(SEMI)* SEMI
+    : KW_ODS stmtBodyToken* SEMI
     ;
 
 titleStatement
-    : KW_TITLE INT_LITERAL? ~(SEMI)* SEMI
+    : (KW_TITLE INT_LITERAL? | KW_TITLE_N) stmtBodyToken* SEMI
     ;
 
 footnoteStatement
-    : KW_FOOTNOTE INT_LITERAL? ~(SEMI)* SEMI
+    : (KW_FOOTNOTE INT_LITERAL? | KW_FOOTNOTE_N) stmtBodyToken* SEMI
+    ;
+
+graphStatement
+    : (KW_GOPTIONS | KW_SYMBOL_N | KW_AXIS_N | KW_PATTERN_N | KW_LEGEND_N) stmtBodyToken* SEMI
     ;
 
 dmStatement
-    : KW_DM ~(SEMI)* SEMI
+    : KW_DM stmtBodyToken* SEMI
     ;
 
 systaskStatement
-    : KW_SYSTASK ~(SEMI)* SEMI
+    : KW_SYSTASK stmtBodyToken* SEMI
     ;
 
 endsasStatement
@@ -1009,13 +1168,13 @@ endsasStatement
     ;
 
 lockStatement
-    : KW_LOCK ~(SEMI)* SEMI
+    : KW_LOCK stmtBodyToken* SEMI
     ;
 
 // Catch-all for unrecognized global statements (lock, unlock, catname, etc.)
 genericGlobalStatement
-    : KW_UNLOCK ~(SEMI)* SEMI
-    | KW_CATNAME ~(SEMI)* SEMI
+    : KW_UNLOCK stmtBodyToken* SEMI
+    | KW_CATNAME stmtBodyToken* SEMI
     ;
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -1035,7 +1194,7 @@ orExpression
     ;
 
 andExpression
-    : notExpression ((KW_AND | AT AT) notExpression)*
+    : notExpression ((KW_AND | AT AT | AMP) notExpression)*
     ;
 
 notExpression
@@ -1043,16 +1202,22 @@ notExpression
     ;
 
 comparisonExpression
-    : addExpression (comparisonOp addExpression)*
+    : addExpression (comparisonOp addExpression | (KW_NOT | CARET | TILDE)? KW_IN COLON? inOperand)*
     ;
 
 comparisonOp
     : EQUALS COLON?   // = or =: (truncated comparison)
-    | NE_OP | NE_HASH | NE_TILDE | LT_OP COLON? | GT_OP COLON?
-    | LE_OP | GE_OP
+    | NE_OP COLON? | NE_HASH COLON? | NE_TILDE COLON? | LT_OP COLON? | GT_OP COLON?
+    | LE_OP COLON? | GE_OP COLON?
     | KW_EQ COLON? | KW_NE COLON? | KW_LT COLON? | KW_LE COLON?
     | KW_GT COLON? | KW_GE COLON?
-    | KW_IN COLON? | KW_LIKE | KW_BETWEEN
+    | KW_LIKE | KW_BETWEEN
+    ;
+
+// SAS IN operator: x in (1,2,3) or x in ("a" "b" "c") — commas optional
+inOperand
+    : LPAREN expression (COMMA? expression)* RPAREN
+    | addExpression
     ;
 
 addExpression
@@ -1068,7 +1233,7 @@ powerExpression
     ;
 
 unaryExpression
-    : (PLUS | MINUS)? primaryExpression
+    : macroLetStmt* (PLUS | MINUS | KW_NOT | CARET | TILDE)? QUESTION* primaryExpression
     ;
 
 primaryExpression
@@ -1077,15 +1242,27 @@ primaryExpression
     | macroFuncCall
     | functionCall
     | identifier LBRACE expressionList RBRACE   // array subscript: lev{i}
+    | macroConcatName LBRACE expressionList RBRACE   // macro array subscript: _var&rand._{i}
+    | macroConcatName DOT identifier             // macro property access: &obj.NUM_ITEMS
+    | macroConcatName DOT                        // trailing dot null delimiter: &&var.., &name.
     | macroConcatName                            // sasjs&i.data, &lib.&ds, &&var
+    | identifier DOT macroFuncCall               // last.%scan(&by,-1), lib.%sysfunc(...)
+    | identifier DOT MACRO_CALL_NAME (LPAREN macroCallArgs? RPAREN)?   // var.%name(...)
+    | DOLLAR identifier? FLOAT_LITERAL numericLiteral?   // $12., $char20.6, $base64X76.2
+    | DOLLAR identifier (DOT numericLiteral?)?           // $base64X76., $hex16., $base64X76
+    | identifier FLOAT_LITERAL                  // SAS format spec: time12.3, datetime20.6
     | qualifiedName
-    | LPAREN expression RPAREN
+    | LPAREN sqlQueryExpression RPAREN                                   // scalar subquery: (select max(x) from t)
+    | LPAREN expressionList RPAREN
     | KW_MISSING LPAREN expression RPAREN
     | KW_OF identifierList
     | DOT identifier   // special missing values: .A through .Z and ._
     | KW_CASE expression? sqlWhenClause+ (KW_ELSE expression)? KW_END   // SQL CASE
     | KW_CALCULATED identifier                                           // SQL CALCULATED
     | KW_EXISTS LPAREN sqlQueryExpression RPAREN                         // SQL EXISTS
+    | KW_NEW functionCall                                                // _new_ hash(), _new_ hiter('h')
+    | macroIfStmt                                                        // %if x %then val %else val2; inline
+    | macroDoBlock                                                       // %do i=1 %to n; ... %end; inline
     ;
 
 // Macro-concatenated name: var&i, &lib.name, sasjs&i.data, &&ref&i
@@ -1096,12 +1273,13 @@ macroConcatName
 
 functionCall
     : qualifiedName LPAREN functionCallArgs? RPAREN
+    | macroConcatName DOT identifier LPAREN functionCallArgs? RPAREN   // &obj.method()
     ;
 
 functionCallArgs
     : KW_DISTINCT expression                     // SQL: COUNT(DISTINCT col)
     | STAR                                        // SQL: COUNT(*)
-    | functionCallArg (COMMA functionCallArg)*
+    | functionCallArg? (COMMA functionCallArg?)*  // allows empty args: func(a,,b)
     ;
 
 functionCallArg
@@ -1142,7 +1320,7 @@ identifier
     | KW_AS | KW_FROM | KW_BETWEEN | KW_LIKE
     | KW_NULL | KW_MISSING | KW_CLASS | KW_VAR
     | KW_TABLE | KW_TABLES | KW_MODEL | KW_WEIGHT | KW_FREQ
-    | KW_NOPRINT | KW_OUT | KW_REPLACE | KW_RENAME
+    | KW_NOPRINT | KW_OUT | KW_REPLACE | KW_RENAME | KW_DECLARE
     | KW_COMPRESS | KW_INFILE | KW_RUN | KW_QUIT
     | KW_PROC | KW_LIBNAME | KW_FILENAME | KW_OPTIONS
     | KW_ODS | KW_TITLE | KW_FOOTNOTE
@@ -1168,4 +1346,7 @@ identifier
     | KW_REFERENCES | KW_UNIQUE | KW_CONSTRAINT
     | KW_CHECK | KW_CASCADE | KW_RESTRICT
     | KW_SEPARATED | KW_TRIMMED | KW_NOTRIM
+    | KW_NEW
+    | KW_TITLE_N | KW_FOOTNOTE_N
+    | KW_GOPTIONS | KW_SYMBOL_N | KW_AXIS_N | KW_PATTERN_N | KW_LEGEND_N
     ;

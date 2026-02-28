@@ -18,8 +18,8 @@ MACRO_COMMENT
 // ─── Strings ───────────────────────────────────────────────────────────────
 // Strings with optional type suffix (d=date, t=time, dt=datetime, x=hex)
 STRING_LITERAL
-    : '\'' ( ~['\r\n] | '\'\'' )* '\'' [dtx]?
-    | '"'  ( ~["\r\n] | '""'   )* '"'  [dtx]?
+    : '\'' ( ~['\r\n] | '\'\'' )* '\'' ( 'dt' | [dtx] )?
+    | '"'  ( ~["\r\n] | '""'   )* '"'  ( 'dt' | [dtx] )?
     ;
 
 // ─── Macro Keywords (must come before ID) ──────────────────────────────────
@@ -100,6 +100,11 @@ MACRO_VAR
 // Double ampersand (indirect reference)
 AMP_AMP
     : '&&'
+    ;
+
+// Bare ampersand (used as AND operator in some SAS contexts: if x & y)
+AMP
+    : '&'
     ;
 
 // ─── SAS Keywords ──────────────────────────────────────────────────────────
@@ -189,6 +194,7 @@ KW_NOPRINT    : 'noprint'    ;
 KW_OUT        : 'out'        ;
 KW_REPLACE    : 'replace'    ;
 KW_RENAME     : 'rename'     ;
+KW_DECLARE    : 'declare'    ;
 KW_COMPRESS   : 'compress'   ;
 KW_DM         : 'dm'         ;
 KW_SYSTASK    : 'systask'    ;
@@ -237,6 +243,16 @@ KW_LOCK       : 'lock'       ;
 KW_UNLOCK     : 'unlock'     ;
 KW_CATNAME    : 'catname'    ;
 
+// ─── Numbered Title/Footnote/Graph Keywords ─────────────────────────
+// Must come BEFORE ID so title1, footnote2, symbol3 etc. don't match ID
+KW_TITLE_N    : 'title' [0-9]+    ;
+KW_FOOTNOTE_N : 'footnote' [0-9]+ ;
+KW_GOPTIONS   : 'goptions' | 'goption' ;
+KW_SYMBOL_N   : 'symbol' [0-9]*   ;
+KW_AXIS_N     : 'axis' [0-9]*     ;
+KW_PATTERN_N  : 'pattern' [0-9]*  ;
+KW_LEGEND_N   : 'legend' [0-9]*   ;
+
 // ─── SQL-specific Keywords ────────────────────────────────────────────
 KW_SQL           : 'sql'           ;
 KW_ASC           : 'asc'           ;
@@ -267,6 +283,7 @@ KW_RESTRICT      : 'restrict'      ;
 KW_SEPARATED     : 'separated'     ;
 KW_TRIMMED       : 'trimmed'       ;
 KW_NOTRIM        : 'notrim'        ;
+KW_NEW           : '_new_'         ;
 
 // ─── Operators & Punctuation ───────────────────────────────────────────────
 DOLLAR        : '$'   ;
@@ -314,7 +331,7 @@ INT_LITERAL
     ;
 
 HEX_LITERAL
-    : [0-9a-f]+ 'x'
+    : DIGIT [0-9a-f]* 'x'
     ;
 
 // ─── Identifiers ──────────────────────────────────────────────────────────

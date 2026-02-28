@@ -55,11 +55,15 @@ EXPAND_RULES = {
     "program", "programStatement",
     "dataStep", "dataStepStatement",
     "ifThenElseStmt", "doBlock", "actionStatement",
+    "orphanElseStmt", "orphanWhenStmt", "orphanOtherwiseStmt",
+    "selectBlock",
     "procStep", "procSqlStep",
     "sqlStatement", "sqlSelectStmt", "sqlCreateStmt", "sqlInsertStmt",
     "sqlUpdateStmt", "sqlDeleteStmt", "sqlAlterStmt", "sqlDropStmt",
-    "sqlDescribeStmt", "sqlGenericStmt",
-    "macroDefinition", "macroBody", "macroBodyStatement",
+    "sqlDescribeStmt", "sqlGenericStmt", "sqlMacroInterleave",
+    "macroDefinition", "macroBody", "macroDoBody",
+    "macroStatement", "macroIfStmt", "macroDoBlock",
+    "sqlQueryTerm", "sqlQueryExpression",
     "globalStatement", "unknownStatement",
 }
 
@@ -104,9 +108,12 @@ def print_tree(parser, ctx, indent=0, max_depth=None):
     elif rule_name in ("dataStep", "procStep", "procSqlStep", "macroDefinition", "globalStatement"):
         snippet = get_text_snippet(parser, ctx, max_len=80)
         print(f"{prefix}\033[1m{rule_name}\033[0m [{line_info}]: {snippet}")
-    elif rule_name == "ifThenElseStmt":
+    elif rule_name in ("ifThenElseStmt", "orphanElseStmt"):
         snippet = get_text_snippet(parser, ctx, max_len=100)
         print(f"{prefix}\033[94m{rule_name}\033[0m [{line_info}]: {snippet}")
+    elif rule_name in ("orphanWhenStmt", "orphanOtherwiseStmt"):
+        snippet = get_text_snippet(parser, ctx, max_len=80)
+        print(f"{prefix}\033[93m{rule_name}\033[0m [{line_info}]: {snippet}")
     elif rule_name in ("sqlSelectStmt", "sqlCreateStmt", "sqlInsertStmt", "sqlUpdateStmt",
                         "sqlDeleteStmt", "sqlAlterStmt", "sqlDropStmt", "sqlDescribeStmt"):
         snippet = get_text_snippet(parser, ctx, max_len=80)
